@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "alith": "^0.10.4",
+    "alith": "^0.10.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "env": "^0.0.2",
