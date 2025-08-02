@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@lazai-labs/alith-linux-x64-gnu": "^0.10.4",
     "alith": "^0.10.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
