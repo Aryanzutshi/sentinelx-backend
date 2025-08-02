@@ -26,3 +26,4 @@ services:
       - key: GEMINI_API_KEY_FIVE
         sync: false
       - fromGroup: my-env-group
+    healthCheckPath: /healthx-check
