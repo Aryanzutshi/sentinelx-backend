@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: sentinelx
+    runtime: node
+    repo: https://github.com/Aryanzutshi/sentinelx-backend
+    branch: main
+    plan: free
+    region: frankfurt
+    numInstances: 1
+    autoDeploy: false
+    buildCommand: npm install
+    startCommand: node index.js
+    maxShutdownDelaySeconds: 120
+    domains:
+      - example.com
+      - www.example.org
+    envVars:
+      - key: GEMINI_API_KEY_ONE
+        sync: false
+      - key: GEMINI_API_KEY_TWO
+        sync: false
+      - key: GEMINI_API_KEY_THREE
+        sync: false
+      - key: GEMINI_API_KEY_FOUR
+        sync: false
+      - key: GEMINI_API_KEY_FIVE
+        sync: false
+      - fromGroup: my-env-group
