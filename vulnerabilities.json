@@ -1,0 +1,221 @@
+{
+  "detectors": [
+    {
+      "name": "Storage ABIEncoderV2 Array",
+      "check": "abiencoderv2-array",
+      "description": "Detects incorrect ABI encoder usage due to a compiler bug in `solc` versions `0.4.7` - `0.5.9`.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract A { uint[2][3] bad_arr = [[1, 2], [3, 4], [5, 6]]; function bad() public { bytes memory b = abi.encode(bad_arr); } }` - `abi.encode(bad_arr)` incorrectly encodes the array.",
+        "reference": "Mentions a compiler bug link, but no URL provided in content."
+      }
+    },
+    {
+      "name": "Arbitrary `from` in transferFrom",
+      "check": "arbitrary-send-erc20",
+      "description": "Detects when `msg.sender` is not used as `from` in transferFrom, allowing unauthorized token transfers.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "function a(address from, address to, uint256 amount) public { erc20.transferFrom(from, to, am); }` - Bob can specify Alice's address to transfer her tokens."
+      }
+    },
+    {
+      "name": "Modifying storage array by value",
+      "check": "array-by-reference",
+      "description": "Detects arrays passed to a function that expects reference to a storage array, leading to unintended updates.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Memory { uint[1] public x; function f() public { f1(x); f2(x); } function f1(uint[1] storage arr) internal { arr[0] = 1; } function f2(uint[1] arr) internal { arr[0] = 2; } }` - Bob assumes `x[0]` is 2, but it is 1."
+      }
+    },
+    {
+      "name": "ABI encodePacked Collision",
+      "check": "encode-packed-collision",
+      "description": "Detects collision due to dynamic type usages in `abi.encodePacked`.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Sign { function get_hash_for_signature(string name, string doc) external returns(bytes32) { return keccak256(abi.encodePacked(name, doc)); } }` - Eve creates a collision with the ID.",
+        "reference": "Mentions Solidity documentation, but no URL provided in content."
+      }
+    },
+    {
+      "name": "Incorrect shift in assembly",
+      "check": "incorrect-shift",
+      "description": "Detects if the values in a shift operation are reversed in assembly.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract C { function f() internal returns (uint a) { assembly { a := shr(a, 8); } } }` - Shifts constant 8 by `a` bits."
+      }
+    },
+    {
+      "name": "Multiple constructor schemes",
+      "check": "multiple-constructors",
+      "description": "Detects multiple constructor definitions in the same contract using new and old schemes.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract A { constructor() public { x = 0; } function A() public { x = 1; } function test() public returns(uint) { return x; } }` - First constructor takes precedence, which may be unintended.",
+        "reference": "Mentions Solidity 0.4.22, but no URL provided in content."
+      }
+    },
+    {
+      "name": "Name reused",
+      "check": "name-reused",
+      "description": "Detects two contracts with similar names, causing compilation artifacts issues.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "Bob's `truffle` codebase has two contracts named `ERC20`, only one generates artifacts."
+      }
+    },
+    {
+      "name": "Protected Variables",
+      "check": "protected-vars",
+      "description": "Detects unprotected variables marked as protected.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Buggy { address owner; function set_not_protected() public { owner = msg.sender; } }` - Anyone can call `set_not_protected`."
+      }
+    },
+    {
+      "name": "Public mappings with nested variables",
+      "check": "public-mappings-nested",
+      "description": "Detects public mappings with nested dynamic types that may lead to encoding issues or unexpected behavior.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {}
+    },
+    {
+      "name": "Right-to-Left-Override character",
+      "check": "rtlo",
+      "description": "An attacker can manipulate the logic of the contract by using a right-to-left-override character (`U+202E`).",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Token { address payable o; // owner mapping(address => uint) tokens; function withdraw() external returns(uint) { uint amount = tokens[msg.sender]; address payable d = msg.sender; tokens[msg.sender] = 0; _withdraw(/*owner‮/*noitanitsed*/ d, o/*‭ /*value */, amount); } function _withdraw(address payable fee_receiver, address payable destination, uint value) internal { fee_receiver.transfer(1); destination.transfer(value); } } `Token` uses the right-to-left-override character when calling `_withdraw`. As a result, the fee is incorrectly sent to `msg.sender`, and the token balance is sent to the owner."
+      }
+    },
+    {
+      "name": "State variable shadowing",
+      "check": "shadowing-state",
+      "description": "Detection of state variables shadowed.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract BaseContract{ address owner; modifier isOwner(){ require(owner == msg.sender); _; } } contract DerivedContract is BaseContract{ address owner; constructor(){ owner = msg.sender; } function withdraw() isOwner() external{ msg.sender.transfer(this.balance); } } `owner` of `BaseContract` is never assigned and the modifier `isOwner` does not work."
+      }
+    },
+    {
+      "name": "Suicidal",
+      "check": "suicidal",
+      "description": "Unprotected call to a function executing `selfdestruct`/`suicide`.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Suicidal{ function kill() public{ selfdestruct(msg.sender); } } Bob calls `kill` and destructs the contract."
+      }
+    },
+    {
+      "name": "Uninitialized state variables",
+      "check": "uninitialized-state",
+      "description": "Uninitialized state variables.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Uninitialized{ address destination; function transfer() payable public{ destination.transfer(msg.value); } } Bob calls `transfer`. As a result, the Ether are sent to the address `0x0` and are lost."
+      }
+    },
+    {
+      "name": "Uninitialized storage variables",
+      "check": "uninitialized-storage",
+      "description": "An uninitialized storage variable will act as a reference to the first state variable, and can override a critical variable.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Uninitialized{ address owner = msg.sender; struct St{ uint a; } function func() { St st; st.a = 0x0; } } Bob calls `func`. As a result, `owner` is overridden to `0`."
+      }
+    },
+    {
+      "name": "Unprotected upgradeable contract",
+      "check": "unprotected-upgrade",
+      "description": "Detects logic contract that can be destructed.",
+      "impact": "High",
+      "confidence": "High",
+      "additional": {
+        "example": "contract Buggy is Initializable{ address payable owner; function initialize() external initializer{ require(owner == address(0)); owner = msg.sender; } function kill() external{ require(msg.sender == owner); selfdestruct(owner); } } Buggy is an upgradeable contract. Anyone can call initialize on the logic contract, and destruct the contract."
+      }
+    },
+    {
+      "name": "Arbitrary `from` in transferFrom used with permit",
+      "check": "arbitrary-send-erc20-permit",
+      "description": "Detect when `msg.sender` is not used as `from` in transferFrom and permit is used.",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "function bad(address from, uint256 value,"
+      }
+    },
+    {
+      "name": "Functions that send Ether to arbitrary destinations",
+      "check": "arbitrary-send-eth",
+      "description": "Unprotected call to a function sending Ether to an arbitrary address.",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "contract ArbitrarySendEth{ address destination; function setDestination(){ destination = msg.sender; } function withdraw() public{ destination.transfer(this.balance); } } Bob calls `setDestination` and `withdraw`. As a result, he withdraws the contract's balance.",
+        "recommendation": "Ensure that an arbitrary user cannot withdraw unauthorized funds."
+      }
+    },
+    {
+      "name": "Array Length Assignment",
+      "check": "controlled-array-length",
+      "description": "Detects the direct assignment of an array's length.",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "contract A { uint[] testArray; // dynamic size array function f(uint usersCount) public { // ... testArray.length = usersCount; // ... } function g(uint userIndex, uint val) public { // ... testArray[userIndex] = val; // ... } } Contract storage/state-variables are indexed by a 256-bit integer. The user can set the array length to `2**256-1` in order to index all storage slots. In the example above, one could call the function `f` to set the array length, then call the function `g` to control any storage slot desired. Note that storage slots here are indexed via a hash of the indexers; nonetheless, all storage will still be accessible and could be controlled by the attacker.",
+        "recommendation": "Do not allow array lengths to be set directly set; instead, opt to add values as needed. Otherwise, thoroughly review the contract to ensure a user-controlled variable cannot reach an array length assignment."
+      }
+    },
+    {
+      "name": "Controlled Delegatecall",
+      "check": "controlled-delegatecall",
+      "description": "`Delegatecall` or `callcode` to an address controlled by the user.",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "contract Delegatecall{ function delegate(address to, bytes data){ to.delegatecall(data); } } Bob calls `delegate` and delegates the execution to his malicious contract. As a result, Bob withdraws the funds of the contract and destructs it.",
+        "recommendation": "Avoid using `delegatecall`. Use only trusted destinations."
+      }
+    },
+    {
+      "name": "Payable functions using `delegatecall` inside a loop",
+      "check": "delegatecall-loop",
+      "description": "Detect the use of `delegatecall` inside a loop in a payable function.",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "contract DelegatecallInLoop{ mapping (address => uint256) balances; function bad(address[] memory receivers) public payable { for (uint256 i = 0; i < receivers.length; i++) { address(this).delegatecall(abi.encodeWithSignature(\"addBalance(address)\", receivers[i])); } } function addBalance(address a) public payable { balances[a] += msg.value; }  } When calling `bad` the same `msg.value` amount will be accredited multiple times.",
+        "recommendation": "Carefully check that the function called by `delegatecall` is not payable/doesn't use `msg.value`."
+      }
+    },
+    {
+      "name": "Incorrect exponentiation",
+      "check": "incorrect-exp",
+      "description": "Detect use of bitwise `xor ^` instead of exponential `**`",
+      "impact": "High",
+      "confidence": "Medium",
+      "additional": {
+        "example": "contract Bug{ uint UINT_MAX = 2^256 - 1; ... } Alice deploys a contract in which `UINT_MAX` incorrectly uses `^` operator instead of `**` for exponentiation",
+        "recommendation": "Use the correct operator `**` for exponentiation."
+      }
+    }
+  ],
+  "source": "Extracted from Slither Detector Documentation on GitHub wiki"
+}
