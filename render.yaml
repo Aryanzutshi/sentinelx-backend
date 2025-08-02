@@ -8,7 +8,7 @@ services:
     region: frankfurt
     numInstances: 1
     autoDeploy: false
-    buildCommand: npm install
+    buildCommand: bun install
     startCommand: node index.js
     maxShutdownDelaySeconds: 120
     domains:
