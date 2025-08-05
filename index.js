@@ -79,7 +79,8 @@ const agents = apiKeys.map(apiKey => {
         model: "gemini-2.5-pro",
         apiKey: apiKey,
         baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
-        preamble: preamble
+        preamble: preamble,
+        maxTokens: 16384,
     };
     return new Agent(agentConfig);
 });
